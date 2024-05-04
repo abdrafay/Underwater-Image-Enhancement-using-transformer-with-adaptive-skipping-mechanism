@@ -112,14 +112,53 @@ class Attention_eca(nn.Module):
         output = torch.cat(outputs, dim=1)
 
         return output
+# Spatial attention module
+class Attention_sa(nn.Module):
+    def __init__(self, dim, num_heads, bias):
+        super(Attention_sa, self).__init__()
+        self.num_heads = num_heads
+        self.scale = dim ** -0.5
 
+        self.qkv = nn.Conv2d(dim, dim * 3, kernel_size=1, bias=bias)
+        self.attn_drop = nn.Dropout(0.1)
+        self.proj = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
+        self.proj_drop = nn.Dropout(0.1)
+
+    def forward(self, x):
+        B, C, H, W = x.shape
+        qkv = self.qkv(x).reshape(B, 3, self.num_heads, C // self.num_heads, H * W)
+        q, k, v = qkv.permute(1, 0, 2, 3, 4).chunk(3)
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        weighted_avg = (attn @ v).transpose(1, 2).reshape(B, C, H, W)
+        x = self.proj(weighted_avg)
+        x = self.proj_drop(x)
+
+        return x
+
+##########################################################################
+## Combined Spatial and Channel-wise Attention
+class CombinedAttention(nn.Module):
+    def __init__(self, dim, num_heads, k_size, bias):
+        super(CombinedAttention, self).__init__()
+        self.spatial_attn = Attention_sa(dim, num_heads, bias)  # Assuming Attention_sa is defined elsewhere
+        self.channel_attn = Attention_eca(num_heads, k_size, bias)
+
+    def forward(self, x):
+        # Apply spatial attention and then channel-wise attention
+        x = self.spatial_attn(x)
+        x = self.channel_attn(x)
+        return x
 ##########################################################################
 class TransformerBlock_eca(nn.Module):
     def __init__(self, dim, num_heads, ffn_expansion_factor, bias, LayerNorm_type):
         super(TransformerBlock_eca, self).__init__()
 
         self.norm1 = LayerNorm(dim, LayerNorm_type)
-        self.attn = Attention_eca(num_heads, 3, bias)
+        self.attn = CombinedAttention(dim, num_heads, 3, bias)
         self.norm2 = LayerNorm(dim, LayerNorm_type)
         self.ffn = FeedForward(dim, ffn_expansion_factor, bias)
 
@@ -128,6 +167,7 @@ class TransformerBlock_eca(nn.Module):
         x = x + self.ffn(self.norm2(x))
 
         return x
+
 
 if __name__ == '__main__':
     input = torch.zeros([2, 48, 128, 128])
