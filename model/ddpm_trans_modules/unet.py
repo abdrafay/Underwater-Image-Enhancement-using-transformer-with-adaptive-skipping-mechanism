@@ -88,6 +88,7 @@ class Block(nn.Module):
             Swish(),
             nn.Dropout(dropout) if dropout != 0 else nn.Identity(),
             nn.Conv2d(dim, dim_out, 3, padding=1)
+            nn.BatchNorm2d(dim_out)
         )
 
     def forward(self, x):
@@ -106,13 +107,14 @@ class ResnetBlock(nn.Module):
         self.block2 = Block(dim_out, dim_out, groups=norm_groups, dropout=dropout)
         self.res_conv = nn.Conv2d(
             dim, dim_out, 1) if dim != dim_out else nn.Identity()
+        self.bn = nn.BatchNorm2d(dim_out)
 
     def forward(self, x, time_emb):
         h = self.block1(x)
         if exists(self.mlp):
             h += self.mlp(time_emb)[:, :, None, None]
         h = self.block2(h)
-        return h + self.res_conv(x)
+        return self.bn(h + self.res_conv(x))
 
 class ResnetBloc_eca(nn.Module):
     def __init__(self, dim, dim_out, *, time_emb_dim=None, norm_groups=32, dropout=0, with_attn=False):
