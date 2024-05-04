@@ -17,7 +17,7 @@
         "train": {
             "name": "Water",
             "mode": "HR", 
-            "dataroot": "dataset/water_train_16_128",
+            "dataroot": "/kaggle/working/Underwater-Image-Enhancement-using-transformer-with-adaptive-skipping-mechanism/dataset/water_train_16_128",
             "datatype": "img",
             "l_resolution": 16, 
             "r_resolution": 128,
