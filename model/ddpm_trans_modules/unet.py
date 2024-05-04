@@ -87,7 +87,7 @@ class Block(nn.Module):
             nn.GroupNorm(groups, dim),
             Swish(),
             nn.Dropout(dropout) if dropout != 0 else nn.Identity(),
-            nn.Conv2d(dim, dim_out, 3, padding=1)
+            nn.Conv2d(dim, dim_out, 3, padding=1),
             nn.BatchNorm2d(dim_out)
         )
 
