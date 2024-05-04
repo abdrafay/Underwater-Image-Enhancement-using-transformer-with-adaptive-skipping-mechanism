@@ -7,6 +7,7 @@ from functools import partial
 import numpy as np
 from tqdm import tqdm
 from model.ddpm_trans_modules.style_transfer import VGGPerceptualLoss
+from model.ddpm_trans_modules.trans_block_eca import TransformerBlock_eca
 
 
 
