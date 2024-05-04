@@ -86,6 +86,29 @@ def noise_like(shape, device, repeat=False):
     def noise(): return torch.randn(shape, device=device)
     return repeat_noise() if repeat else noise()
 
+class MultiScaleTransformer(nn.Module):
+    def __init__(self, channels, num_heads, num_layers, num_scales):
+        super(MultiScaleTransformer, self).__init__()
+        self.num_scales = num_scales
+        self.transformers = nn.ModuleList()
+
+        for _ in range(num_scales):
+            transformer_layers = nn.ModuleList([TransformerBlock_eca(dim=channels, num_heads=num_heads, ffn_expansion_factor=2.66,
+                               bias=False, LayerNorm_type='WithBias') for _ in range(num_layers)])
+            self.transformers.append(transformer_layers)
+
+    def forward(self, x):
+        outputs = []
+
+        for i in range(self.num_scales):
+            scale_output = F.interpolate(x, scale_factor=1/(2**i), mode='bilinear', align_corners=False)
+            for transformer in self.transformers[i]:
+                scale_output = transformer(scale_output)
+            scale_output = F.interpolate(scale_output, size=x.shape[-2:], mode='bilinear', align_corners=False)
+            outputs.append(scale_output)
+
+        return torch.cat(outputs, dim=1)
+
 
 class GaussianDiffusion(nn.Module):
     def __init__(
@@ -95,7 +118,10 @@ class GaussianDiffusion(nn.Module):
         channels=3,
         loss_type='l1',
         conditional=True,
-        schedule_opt=None
+        schedule_opt=None,
+        num_heads=8,
+        num_layers=4,
+        num_scales=3
     ):
         super().__init__()
         self.channels = channels
@@ -103,6 +129,7 @@ class GaussianDiffusion(nn.Module):
         self.denoise_fn = denoise_fn
         self.conditional = conditional
         self.loss_type = loss_type
+        self.multi_scale_transformer = MultiScaleTransformer(channels=channels, num_heads=8, num_layers=4, num_scales=3)
         if schedule_opt is not None:
             pass
             # self.set_new_noise_schedule(schedule_opt)
@@ -410,9 +437,35 @@ class GaussianDiffusion(nn.Module):
                     t, x_start.shape) * noise
         )
 
+    def assess_image_complexity(self, x):
+        # Assessing noise level - using standard deviation as a proxy
+        noise_level = x.std(dim=[1, 2, 3])
+
+        # Assessing contrast - using the range of intensity values
+        contrast = x.max(dim=-1)[0].max(dim=-1)[0] - x.min(dim=-1)[0].min(dim=-1)[0]
+
+        # Assessing texture complexity - using entropy as a proxy
+        # Here we flatten the image and calculate the histogram
+        # Then we use the histogram to calculate the entropy
+        # This is a simplified example and may need to be adapted for actual use
+        hist = x.flatten(start_dim=1).float().histc(bins=256, min=0, max=1)
+        prob = hist / hist.sum(dim=1, keepdim=True)
+        prob = torch.where(prob != 0, prob, torch.ones_like(prob))
+        texture_complexity = -(prob * prob.log()).sum(dim=1)
+
+        # Combine the metrics into a single complexity score
+        # This is a simple average, but you can use a weighted average or other methods
+        complexity_score = (noise_level + contrast + texture_complexity) / 3
+        return complexity_score
+
+    def adaptive_skip(self, t, complexity_score, threshold=0.5):
+        # Skip if complexity score is below the threshold
+        skip = (complexity_score < threshold)
+        return skip
 
     def p_losses(self, x_in, noise=None):
         x_start = x_in['HR']
+        x_start = self.multi_scale_transformer(x_start)
         condition_x = x_in['SR']
         [b, c, h, w] = x_start.shape
         t = torch.randint(0, self.num_timesteps, (b,),
