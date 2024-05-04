@@ -141,6 +141,20 @@ class GaussianDiffusion(nn.Module):
             self.style_loss = VGGPerceptualLoss().to(device)
         elif self.loss_type == 'l2':
             self.loss_func = nn.MSELoss().to(device)
+        elif self.loss_type == 'elastic':
+            class ElasticLoss(nn.Module):
+                def __init__(self, alpha=0.5, beta=0.5):
+                    super(ElasticLoss, self).__init__()
+                    self.alpha = alpha
+                    self.beta = beta
+        
+                def forward(self, input, target):
+                    l1_loss = F.l1_loss(input, target)
+                    l2_loss = F.mse_loss(input, target)
+                    return self.alpha * l1_loss + self.beta * l2_loss
+        
+            self.loss_func = ElasticLoss().to(device)
+
         else:
             raise NotImplementedError()
 
