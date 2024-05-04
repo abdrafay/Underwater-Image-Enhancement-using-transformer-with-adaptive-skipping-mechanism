@@ -1,43 +1,43 @@
 {
     "name": "sr_ffhq",
-    "phase": "train", // train or val
+    "phase": "train", 
     "gpu_ids": [
         0
     ],
-    "path": { //set the path
-        "stage": "train", //change train or val folder to save
+    "path": {
+        "stage": "train",
         "log": "logs",
         "tb_logger": "tb_logger",
         "results": "results",
         "checkpoint": "checkpoint",
         "resume_state": null
-        // "resume_state": "experiments_supervised/I950000_E3369" //pretrain model or training state
+        
     },
     "datasets": {
         "train": {
             "name": "Water",
-            "mode": "HR", // whether need LR img
+            "mode": "HR", 
             "dataroot": "dataset/water_train_16_128",
-            "datatype": "img", //lmdb or img, path of img files
-            "l_resolution": 16, // low resolution need to super_resolution
-            "r_resolution": 128, // high resolution
+            "datatype": "img",
+            "l_resolution": 16, 
+            "r_resolution": 128,
             "batch_size": 10,
             "num_workers": 8,
             "use_shuffle": true,
-            "data_len": -1 // -1 represents all data used in train
+            "data_len": -1 
         },
         "val": {
             "name": "checking",
             "mode": "HR",
             "dataroot": "dataset/val",
-            "datatype": "img", //lmdb or img, path of img files
+            "datatype": "img",
             "l_resolution": 16,
             "r_resolution": 256,
-            "data_len": -1 // data length in validation
+            "data_len": -1 
         }
     },
     "model": {
-        "which_model_G": "trans", // use the ddpm or sr3 network structure
+        "which_model_G": "trans",
         "finetune_norm": false,
         "unet": {
             "in_channel": 6,
@@ -57,7 +57,7 @@
             "res_blocks": 2,
             "dropout": 0.2
         },
-        "beta_schedule": { // use munual beta_schedule for acceleration
+        "beta_schedule": { 
             "train": {
                 "schedule": "linear",
                 "n_timestep": 2000,
@@ -73,8 +73,8 @@
         },
         "diffusion": {
             "image_size": 256,
-            "channels": 3, //sample channel
-            "conditional": true // unconditional generation or unconditional generation(super_resolution)
+            "channels": 3, 
+            "conditional": true 
         }
     },
     "train": {
@@ -86,7 +86,7 @@
             "type": "adam",
             "lr": 1e-4
         },
-        "ema_scheduler": { // not used now
+        "ema_scheduler": { 
             "step_start_ema": 5000,
             "update_ema_every": 1,
             "ema_decay": 0.9999
