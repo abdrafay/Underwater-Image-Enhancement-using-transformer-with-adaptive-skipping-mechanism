@@ -10,8 +10,8 @@
         "tb_logger": "tb_logger",
         "results": "results",
         "checkpoint": "checkpoint",
-        //"resume_state": null
-        "resume_state": "experiments_supervised/I950000_E3369" //pretrain model or training state
+        "resume_state": null
+        // "resume_state": "experiments_supervised/I950000_E3369" //pretrain model or training state
     },
     "datasets": {
         "train": {
@@ -27,9 +27,9 @@
             "data_len": -1 // -1 represents all data used in train
         },
         "val": {
-            "name": "Water",
+            "name": "checking",
             "mode": "HR",
-            "dataroot": "dataset/water_val_16_256",
+            "dataroot": "dataset/val",
             "datatype": "img", //lmdb or img, path of img files
             "l_resolution": 16,
             "r_resolution": 256,
