@@ -40,7 +40,7 @@
         "which_model_G": "trans",
         "finetune_norm": false,
         "unet": {
-            "in_channel": 6,
+            "in_channel": 12,
             "out_channel": 3,
             "inner_channel": 48,
             "norm_groups": 24,
