@@ -64,10 +64,6 @@ def default(val, d):
     return d() if isfunction(d) else d
 
 
-# def extract(a, t, x_shape):
-#     b, *_ = t.shape
-#     out = a.gather(-1, t)
-#     return out.reshape(b, *((1,) * (len(x_shape) - 1)))
 
 def extract(a, t, x_shape):
     """Extract coefficients from a based on t and reshape to make it
@@ -120,7 +116,7 @@ class GaussianDiffusion(nn.Module):
         loss_type='l1',
         conditional=True,
         schedule_opt=None,
-        num_heads=3,
+        num_heads=8,
         num_layers=4,
         num_scales=3
     ):
