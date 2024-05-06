@@ -135,7 +135,7 @@ class ResnetBloc_eca(nn.Module):
 class Encoder(nn.Module):
     def __init__(
             self,
-            in_channel=12,
+            in_channel=6,
             inner_channel=32,
             norm_groups=32,
     ):
@@ -227,7 +227,7 @@ class AdaptiveInstanceNorm2d(nn.Module):
 class UNet(nn.Module):
     def __init__(
         self,
-        in_channel=12,
+        in_channel=6,
         out_channel=3,
         inner_channel=32,
         norm_groups=32,
