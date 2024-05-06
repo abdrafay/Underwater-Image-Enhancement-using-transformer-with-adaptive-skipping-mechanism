@@ -126,6 +126,7 @@ class Attention_sa(nn.Module):
 
     def forward(self, x):
         B, C, H, W = x.shape
+        assert self.num_heads <= C, "num_heads should be less than or equal to the number of channels"
         qkv = self.qkv(x).reshape(B, 3, self.num_heads, C // self.num_heads, H * W)
         q, k, v = qkv.permute(1, 0, 2, 3, 4).chunk(3)
 
