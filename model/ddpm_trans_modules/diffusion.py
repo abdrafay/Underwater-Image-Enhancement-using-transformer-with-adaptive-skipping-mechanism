@@ -116,7 +116,7 @@ class GaussianDiffusion(nn.Module):
         loss_type='l1',
         conditional=True,
         schedule_opt=None,
-        num_heads=8,
+        num_heads=3,
         num_layers=4,
         num_scales=3
     ):
