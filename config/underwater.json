@@ -21,7 +21,7 @@
             "datatype": "img",
             "l_resolution": 16, 
             "r_resolution": 256,
-            "batch_size": 10,
+            "batch_size": 4,
             "num_workers": 8,
             "use_shuffle": true,
             "data_len": -1 
