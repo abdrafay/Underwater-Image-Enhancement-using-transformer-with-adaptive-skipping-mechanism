@@ -70,7 +70,7 @@ def extract(a, t, x_shape):
     broadcastable with x_shape."""
     bs, = t.shape
     assert x_shape[0] == bs
-    out = torch.gather(torch.tensor(a, dtype=torch.float, device=t.device), 0, t.long())
+    out = torch.gather(a.clone().detach().to(dtype=torch.float, device=t.device), 0, t.long())
     assert out.shape == (bs,)
     out = out.reshape((bs,) + (1,) * (len(x_shape) - 1))
     return out
