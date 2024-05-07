@@ -112,7 +112,7 @@ class GaussianDiffusion(nn.Module):
         self,
         denoise_fn,
         image_size,
-        channels=3,
+        channels=9,
         loss_type='l1',
         conditional=True,
         schedule_opt=None,
@@ -126,7 +126,7 @@ class GaussianDiffusion(nn.Module):
         self.denoise_fn = denoise_fn
         self.conditional = conditional
         self.loss_type = loss_type
-        self.multi_scale_transformer = MultiScaleTransformer(channels=channels, num_heads=3, num_layers=4, num_scales=3)
+        self.multi_scale_transformer = MultiScaleTransformer(channels=channels, num_heads=num_heads, num_layers=num_layers, num_scales=num_scales)
         if schedule_opt is not None:
             pass
             # self.set_new_noise_schedule(schedule_opt)

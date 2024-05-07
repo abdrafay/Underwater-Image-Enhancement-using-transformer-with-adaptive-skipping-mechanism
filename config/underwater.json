@@ -22,7 +22,7 @@
             "l_resolution": 16, 
             "r_resolution": 256,
             "batch_size": 4,
-            "num_workers": 8,
+            "num_workers": 4,
             "use_shuffle": true,
             "data_len": -1 
         },
@@ -73,7 +73,7 @@
         },
         "diffusion": {
             "image_size": 256,
-            "channels": 3, 
+            "channels": 9, 
             "conditional": true 
         }
     },
